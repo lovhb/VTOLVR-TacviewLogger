@@ -11,7 +11,7 @@ namespace TacViewDataLogger
             return $@"FileType=text/acmi/tacview
 FileVersion=2.1
 0,DataRecorder={Globals.projectName} {Globals.projectVersion} by {Globals.projectAuthor}
-0,DataSource={TacViewDataLogger.dataSource}";
+0,DataSource={Main.dataSource}";
         }
 
         public string recordingInfo(string author = null, string title = null, string category = null, string briefing = null, string debriefing = null, string comments = null)

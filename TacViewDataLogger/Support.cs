@@ -86,7 +86,7 @@ namespace TacViewDataLogger
          * and add them to the removed list when it's called, and we can remove the bullet from the dictionary
          * so we don't keep track of it and a new entry is created when a new bullet is fired
          */
-        [Harmony.HarmonyPatch(typeof(Bullet), "KillBullet")]
+        [HarmonyLib.HarmonyPatch(typeof(Bullet), "KillBullet")]
         class BulletKillPatch
         {
             static void Postfix(object __instance)
@@ -96,7 +96,7 @@ namespace TacViewDataLogger
                 objectIDs.Remove(__instance);
             }
         }
-        [Harmony.HarmonyPatch(typeof(FlareCountermeasure), "OnFlareDecayed")]
+        [HarmonyLib.HarmonyPatch(typeof(FlareCountermeasure), "OnFlareDecayed")]
         class FlareDecayPatch
         {
             static void Postfix(CMFlare f)

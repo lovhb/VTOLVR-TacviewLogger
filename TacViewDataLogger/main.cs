@@ -1,4 +1,4 @@
-﻿using Harmony;
+﻿using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,8 +11,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ModLoader.Framework;
+using ModLoader.Framework.Attributes;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using VTOLAPI;
+using Debug = UnityEngine.Debug;
 
 namespace TacViewDataLogger
 {
@@ -24,14 +28,15 @@ namespace TacViewDataLogger
         public static string projectVersion = "v2.7";
 
     }
-
-    public class TacViewDataLogger : VTOLMOD
+    
+    [ItemId("NotPolar.TacviewDataLogger")]
+    public class Main : VtolMod
     {
 
         public static string dataSource = $"VTOL VR v{GameStartup.version.ToString()}";
 
 
-        private VTOLAPI api;
+        private VTAPI api;
 
         TimeSpan interval = new TimeSpan(0, 0, 2);
 
@@ -97,17 +102,16 @@ namespace TacViewDataLogger
 
         public Texture2D gameHeightmap;
 
-
-        private void Start()
+        public string ModFolder;
+        private void Awake()
         {
-            HarmonyInstance harmony = HarmonyInstance.Create("tacview.harmony");
+            ModFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Debug.Log("LOADED TACVIEW DATALOGGER");
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+            
+            api = VTAPI.instance;
 
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-            api = VTOLAPI.instance;
-
-
-            System.IO.Directory.CreateDirectory("TacViewDataLogs");
+            Directory.CreateDirectory("TacViewDataLogs");
 
             support.WriteLog($"TacView Data Logger {Globals.projectVersion} Loaded. Waiting for Scene Start!");
 
@@ -125,7 +129,11 @@ namespace TacViewDataLogger
             frameRateLogSize = (int)UnityEngine.XR.XRDevice.refreshRate * 2;
             frameRateLog = new FixedSizedQueue<float>(frameRateLogSize);
         }
-
+        
+        public override void UnLoad()
+        {
+            // Unloaded
+        }
 
         private void SceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
@@ -155,8 +163,8 @@ namespace TacViewDataLogger
 
         void MissionReloaded()
         {
-            if (TacViewDataLogger.SceneReloaded != null)
-                TacViewDataLogger.SceneReloaded.Invoke();
+            if (SceneReloaded != null)
+                SceneReloaded.Invoke();
         }
 
         void manageSamplingRate()
@@ -269,7 +277,7 @@ namespace TacViewDataLogger
                 support.WriteLog("Scenario Ready!");
 
                 support.WriteLog("Getting Players Vehicle");
-                currentVehicle = VTOLAPI.GetPlayersVehicleGameObject();
+                currentVehicle = VTAPI.GetPlayersVehicleGameObject();
 
                 support.WriteLog("Creating TacView Directory");
                 System.IO.Directory.CreateDirectory("TacViewDataLogs\\" + DateTime.UtcNow.ToString("yyyy-MM-dd HHmm"));
